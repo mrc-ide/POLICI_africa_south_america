@@ -1,0 +1,17 @@
+
+shp<-readOGR("Y:/Arran/PhD/arran_packages/popvac_package/data/shp/global_endemic_shp1.shp")
+
+global_adm0<-readOGR("Y:/DATA/shapefiles/gadm28/All/gadm28_adm0.shp")
+
+global_use<-global_adm0[global_adm0$ISO %in% shp$ISO, ]
+
+
+global_simp<-gSimplify(global_use, tol = .01, topologyPreserve = T)
+
+global_simp_use<-SpatialPolygonsDataFrame(global_simp, data = as.data.frame(global_use), match.ID = F)
+
+object.size(global_simp_use)/1024^2
+
+plot(global_simp_use)
+
+writeSpatialShape(global_simp_use, "Y:/Arran/PhD/africa_south_america_shiny/data/shp/global_endemic_shp0")
