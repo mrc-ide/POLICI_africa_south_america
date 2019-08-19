@@ -10,33 +10,17 @@ library(shinyBS)
 
 shp0<-readOGR("data/shp/global_endemic_shp0.shp", stringsAsFactors = F)
 shp1<-readOGR("data/shp/global_endemic_shp1.shp", stringsAsFactors = F)
+shp1$SPID<-paste0(shp1$ISO, shp1$ID_1)
+shp1<-shp1[!duplicated(shp1$SPID), ]
 
 load("data/vac_pop_data/pop_vac_data.Rdata")
 
-country_vec<-shp0$ISO
+country_vec<-shp0$NAME_ENGLI
 
+shp1<-shp1[which(shp1$SPID %in% row.names(save_object[[1]])), ]
 
-
-
-sapply(1:101)
-
-
-flat_coverage<-function(country, year){
-  
-  vac_year<-save_object[[1]][, year-1950, ]
-  pop_year<-save_object[[2]][, year-1950, ]
-  
-  if(country != "all"){
-    vac_year<-vac_year[which(grepl(country, row.names(vac_year))), ]
-    pop_year<-pop_year[which(grepl(country, row.names(pop_year))), ]
-  }
-  
-  pop_vaccinated<-vac_year*pop_year
-  pop_vaccinated[is.nan(pop_vaccinated)]<-0
-  
-  rowSums(pop_vaccinated)/rowSums(pop_year)
-
-}
+save_object[[1]]<-save_object[[1]][!duplicated(row.names(save_object[[1]])), , ]
+save_object[[2]]<-save_object[[2]][!duplicated(row.names(save_object[[2]])), , ]
 
 
 
