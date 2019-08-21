@@ -24,16 +24,16 @@ shinyUI(fluidPage(
                actionButton("resetSelection", label = "Reset row selection"),
                actionButton("update_range", label = "Update age range"),
                br(),br(),
-               conditionalPanel(condition = "input.conditionedPanels == '1'", DT::dataTableOutput("table")),
+               conditionalPanel(condition = "input.conditionedPanels == '1'", DT::dataTableOutput("country_df")),
                conditionalPanel(condition = "input.conditionedPanels == '1'", downloadButton(outputId='downloadtable', label = 'Download table')),
                conditionalPanel(condition = "input.conditionedPanels == '1'", downloadButton(outputId='downloadMap', label = 'Download map')),
                
-               conditionalPanel(condition = "input.conditionedPanels == '2'", DT::dataTableOutput("table2")),
+               conditionalPanel(condition = "input.conditionedPanels == '2'", DT::dataTableOutput("country_df")),
                conditionalPanel(condition = "input.conditionedPanels == '2'", downloadButton(outputId='downloadtable2', label='Download table')),
                conditionalPanel(condition = "input.conditionedPanels == '2'", downloadButton(outputId='downloadComb', label = 'Download vaccination proportion plot')),
                conditionalPanel(condition = "input.conditionedPanels == '2'", downloadButton(outputId='downloadPlot', label = 'Download vaccination coverage plot')),
                
-               conditionalPanel(condition = "input.conditionedPanels == '3'", DT::dataTableOutput("endemictable")),
+               conditionalPanel(condition = "input.conditionedPanels == '3'", DT::dataTableOutput("endemic_df")),
                conditionalPanel(condition = "input.conditionedPanels == '3'", downloadButton(outputId='downloadendemictable', label = 'Download endemic table')),
                conditionalPanel(condition = "input.conditionedPanels == '3'", downloadButton(outputId='downloadmapendemic', label = 'Download endemic map'))),
   
