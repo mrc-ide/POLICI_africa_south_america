@@ -7,6 +7,9 @@ library(Hmisc)
 library(rgeos)
 library(rgdal)
 library(shinyBS)
+library(raster)
+
+invisible(sapply(list.files("functions", full.names = T), function(x) source(x)))
 
 shp0<-readOGR("data/shp/global_endemic_shp0.shp", stringsAsFactors = F)
 shp1<-readOGR("data/shp/global_endemic_shp1.shp", stringsAsFactors = F)
@@ -22,7 +25,9 @@ shp1<-shp1[which(shp1$SPID %in% row.names(save_object[[1]])), ]
 save_object[[1]]<-save_object[[1]][!duplicated(row.names(save_object[[1]])), , ]
 save_object[[2]]<-save_object[[2]][!duplicated(row.names(save_object[[2]])), , ]
 
-
+save_object[[1]]<-save_object[[1]][order(row.names(save_object[[1]])), , ]
+save_object[[2]]<-save_object[[2]][order(row.names(save_object[[2]])), , ]
+shp1<-shp1[order(shp1$SPID), ]
 
 
 

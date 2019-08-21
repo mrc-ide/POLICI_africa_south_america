@@ -1,4 +1,4 @@
-
+source("load_data.R")
 
 shinyUI(fluidPage(
   headerPanel(list(HTML('<img src="Imperial.png"/>'),"Yellow fever Immunization coverage across Africa and South America"),

@@ -14,7 +14,7 @@ plot_map_function <- function(vc_pop_df, shp_file){
   
   #Creating the popup 
   popup <- paste0("Name: ", vaccination$adm1_name, " - ",
-               "Population immunity: ", paste0(round(vaccination$vc, 1), "%"), " - ",
+               "Population immunity: ", paste0(round(vaccination$vc*100, 1), "%"), " - ",
                "Population: ", formatC(vaccination$pop, format = "d", big.mark = ","))
   
   #Colour scheme for plotting

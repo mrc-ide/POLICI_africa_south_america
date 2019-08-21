@@ -18,9 +18,9 @@ flat_coverage_pop<-function(shp_file, year, min_age, max_age){
   pop_vaccinated<-vac_year*pop_year
   pop_vaccinated[is.nan(pop_vaccinated)]<-0
   
-  data.frame(ISO = strsplit(country, "\\|")[[1]],
+  data.frame(ISO = gsub('[0-9]', "", row.names(pop_vaccinated)),
              adm1_id = row.names(pop_vaccinated),
-             adm1_name = shp_file$NAME_1,
+             adm1_name = shp_file[shp_file$SPID %in% row.names(pop_vaccinated), ]$NAME_1,
              pop = rowSums(pop_year),
              vc = (rowSums(pop_vaccinated)/rowSums(pop_year)),
              stringsAsFactors = F)
