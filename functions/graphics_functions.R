@@ -18,7 +18,7 @@ plot_map_function <- function(vc_pop_df, shp_file){
   
   #Creating the popup 
   popup <- paste0(
-    "Country: ", no_zero_shp$ISO, 
+    "Country: ", no_zero_shp$NAME_0, " - ", 
     if(any(names(vc_pop_df) == "adm1_id")) non_zero_df$adm1_name else non_zero_df$adm0_name, " - ",
                "Population immunity: ", paste0(round(non_zero_df$vc*100, 1), "%"), " - ",
                "Population: ", formatC(non_zero_df$pop, format = "d", big.mark = ","))
