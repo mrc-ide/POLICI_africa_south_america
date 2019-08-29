@@ -4,100 +4,190 @@ shinyServer(function(input, output, session){
   
   options(shiny.sanitize.errors = FALSE)
   
+  '~~~~~~~~~~~~~~~~~~~~~~~ Plotting maps  ~~~~~~~~~~~~~~~~~~~~~~~'
+  
   'Create country maps'
-  output$country_map <- renderLeaflet({res = 300
-  
-  #Subset to country, year and ages of interes
-  country_of_interest <- input$country
-  year_of_interest <- input$year
-  ages_of_interest <- input$age
-  country_shape <- shp1[shp1$NAME_0 == country_of_interest, ]
-  
-  #Generate df of coverage
-  plot_data <- flat_coverage_pop(shp_file = country_shape, 
-                               year = year_of_interest, 
-                               min_age = ages_of_interest[1],
-                               max_age = ages_of_interest[2])
-  
   #Plot map
-  plot_map_function(plot_data, country_shape)
-  
+  output$country_map <- renderLeaflet({res = 300
+  country_map_gen(shp1 = shp1,
+                  country_of_interest = input$country,
+                  year_of_interest = input$year,
+                  ages_of_interest = input$age)
   })
   
   'Create endemic zone'
   output$endemic_map <- renderLeaflet({res = 300
-  
-  #Subset to country, year and ages of interes
-  year_of_interest <- input$year
-  ages_of_interest <- input$age
-  
-  #Generate df of coverage
-  plot_data <- flat_coverage_pop(shp_file = shp1,
-                               year = year_of_interest,
-                               min_age = ages_of_interest[1],
-                               max_age = ages_of_interest[2])
-  
-  #Plot map
-  plot_map_function(plot_data, shp1)
+  map_made<-endemic_map_gen(shp1 = shp1,
+                            year_of_interest = input$year2,
+                            ages_of_interest = input$age2)
+  map_made
   
   })
+  
+  '~~~~~~~~~~~~~~~~~~~~~~~ Plotting graphs ~~~~~~~~~~~~~~~~~~~~~~~'
   
   'Create barplot'
+  output$barplot <- renderLeaflet({res = 300
+  
+  #Subset to country, year and ages of interes
+  country_of_interest <- input$country
+  year_of_interest <- input$year
+  
+  #Generate df of coverage
+  province <- if(is.null(input$country_df2_rows_selected) || any(input$country_df2_rows_selected == 1)) "all" else input$country_df2_rows_selected - 1
+  
+  plot_data <- coverage_by_age_aggregated(country = unique(shp1[shp1$NAME_0 == country_of_interest, ]$ISO),
+                                          province = province,
+                                          year = year_of_interest)
+  
+  #Plot map
+  plot_age_vc_barplot(plot_data)
+  
+  })
+  
   
   'Create linegraph'
+  output$linegraph <- renderLeaflet({res = 300
   
-  'Create data.table for country level'
-  output$country_df <- DT::renderDataTable({
-    
-    #Subset to country, year and ages of interes
-    country_of_interest <- input$country
-    year_of_interest <- input$year
-    ages_of_interest <- input$age
-    country_shape <- shp1[shp1$NAME_0 == country_of_interest, ]
-    
-    #Generate df of coverage
-    plot_data <- flat_coverage_pop(shp_file = country_shape,
-                                 year = year_of_interest,
-                                 min_age = ages_of_interest[1],
-                                 max_age = ages_of_interest[2])
-    
-    #Plot map
-    show_df <- rbind(all, plot_data[, 2:ncol(plot_data)])
-    show_df$vc <- round(show_df$vc*100, 1)
-    show_df<-show_df[, c("adm1_id", "adm1_name", "vc", "pop")]
-    
-    DT::datatable(rownames = FALSE, show_df, options=list(pageLength = 14, searching = FALSE, processing = FALSE, mark = ",",
-                                                          columnDefs = list(list(className = 'dt-center', targets = 2:3))), 
-                  colnames = c("ID", "Province", "Coverage (%)", "Population"), 
-                  selection = list(target='row')) %>% DT::formatRound(columns = "pop", mark = ",")
+  #Subset to country, year and ages of interes
+  country_of_interest <- input$country
+  year_of_interest <- input$year
+  
+  #Generate df of coverage
+  plot_data <- coverage_by_age(country = unique(shp1[shp1$NAME_0 == country_of_interest, ]$ISO),
+                               year = year_of_interest)
+  #Plot map
+  province <- if(is.null(input$country_df2_rows_selected) || any(input$country_df2_rows_selected == 1)) "all" else input$country_df2_rows_selected - 1
+  plot_age_vc_linegraph(plot_data, province)
+  
   })
   
-
+  
+  '~~~~~~~~~~~~~~~~~~~~~~~ Creating dataframes ~~~~~~~~~~~~~~~~~~~~~~~'
+  
+  
+  'Create data.table for country level maps'
+  output$country_df <- DT::renderDataTable({
+    country_df_gen(shp1 = shp1,
+                   country_of_interest = input$country,
+                   year_of_interest = input$year,
+                   ages_of_interest = input$age)
+  })
+  
+  'Create data.table for country level age exploration'
+  output$country_df2 <- DT::renderDataTable({
+    country_df_gen(shp1 = shp1,
+                   country_of_interest = input$country,
+                   year_of_interest = input$year,
+                   ages_of_interest = input$age)
+  })
+  
   'Create data.table for endemic zone level'
   output$endemic_df <- DT::renderDataTable({
+    endemic_df_gen(shp1 = shp1,
+                   year_of_interest = input$year2,
+                   ages_of_interest = input$age2)
     
+  })
+  
+  
+  '~~~~~~~~~~~~~~~~~~~~~~~ Proxy objects and observing events ~~~~~~~~~~~~~~~~~~~~~~~'
+  '~~~~~~~~~~~~~~~~~~~~~~~ Map proxy ~~~~~~~~~~~~~~~~~~~~~~~'
+  observeEvent(input$country_df_rows_selected, {
+    if(input$country_df_rows_selected %in% 1:2){
+      leafletProxy("country_map")
+    } else {
+      country_shp <- shp1[shp1$NAME_0 == input$country, ]
+      polygon_add <- gUnaryUnion(country_shp[input$country_df_rows_selected - 2, ])
+      leafletProxy("country_map") %>% clearGroup("country_outline") %>%
+        addPolylines(data = polygon_add, fill = F, weight = 5, color = "#FF6347", group = "country_outline", opacity = 1)
+    }
+  })
+  
+  observeEvent(input$endemic_df_rows_selected, {
+    if(input$endemic_df_rows_selected %in% 1:2){
+      leafletProxy("endemic_map")
+    } else {
+      polygon_add <- gUnaryUnion(shp0[input$endemic_df_rows_selected -2, ])
+      leafletProxy("endemic_map") %>% clearGroup("endemic_outline") %>% 
+        addPolylines(data = polygon_add, fill = F, weight = 5, color = "#FF6347", group = "endemic_outline", opacity = 1)
+    }
+  })
+  
+  observeEvent(input$resetSelection, {
+    leafletProxy("country_map") %>% clearGroup("country_outline")
+  })
+  
+  observeEvent(input$resetSelection, {
+    leafletProxy("endemic_map") %>% clearGroup("endemic_outline")
+  })
+  
+  observeEvent(input$country_df2_rows_selected, {
+
     #Subset to country, year and ages of interes
     country_of_interest <- input$country
     year_of_interest <- input$year
-    ages_of_interest <- input$age
-    country_shape <- shp1
     
     #Generate df of coverage
-    plot_data <- flat_coverage_pop(shp_file = country_shape,
-                                   year = year_of_interest,
-                                   min_age = ages_of_interest[1],
-                                   max_age = ages_of_interest[2])
+    plot_data <- coverage_by_age(country = unique(shp1[shp1$NAME_0 == country_of_interest, ]$ISO),
+                                 year = year_of_interest)
+    #Plot map
+    print(input$country_df_rows_selected)
+    province <- if(is.null(input$country_df2_rows_selected) || any(input$country_df2_rows_selected == 1)) "all" else input$country_df2_rows_selected - 1
+    
+    plot_age_vc_linegraph(plot_data, province)
+
+  })
+  
+  observeEvent(input$country_df2_rows_selected, {
+    #Subset to country, year and ages of interes
+    country_of_interest <- input$country
+    year_of_interest <- input$year
+    
+    #Generate df of coverage
+    province <- if(is.null(input$country_df2_rows_selected) || any(input$country_df2_rows_selected == 1)) "all" else input$country_df2_rows_selected - 1
+    
+    plot_data <- coverage_by_age_aggregated(country = unique(shp1[shp1$NAME_0 == country_of_interest, ]$ISO),
+                                            province = province,
+                                            year = year_of_interest)
     
     #Plot map
-    show_df <- rbind(all, plot_data[, 2:ncol(plot_data)])
-    show_df$vc <- round(show_df$vc*100, 1)
-    show_df<-show_df[, c("adm1_id", "adm1_name", "vc", "pop")]
+    plot_age_vc_barplot(plot_data)
     
-    DT::datatable(rownames = FALSE, show_df, options=list(pageLength = 14, searching = FALSE, processing = FALSE, mark = ",",
-                                                          columnDefs = list(list(className = 'dt-center', targets = 2:3))), 
-                  colnames = c("ID", "Province", "Coverage (%)", "Population"), 
-                  selection = list(target='row')) %>% DT::formatRound(columns = "pop", mark = ",")
   })
+  
+  
+  '~~~~~~~~~~~~~~~~~~~~~~~ Datatable proxy ~~~~~~~~~~~~~~~~~~~~~~~'
+  country_df_proxy <- dataTableProxy('country_df')
+  country_df2_proxy <- dataTableProxy('country_df2')
+  endemic_df_proxy <- dataTableProxy('endemic_df')
+  
+  observeEvent(input$resetSelection,{
+    selectRows(country_df_proxy, NULL)
+  })
+  
+  observeEvent(input$resetSelection,{
+    selectRows(country_df2_proxy, NULL)
+  })
+  
+  observeEvent(input$resetSelection,{
+    selectRows(endemic_df_proxy, NULL)
+  })
+  
+  # 
+  # observeEvent(input$year,{
+  #   selectRows(proxy,input$table_rows_selected)
+  # })
+  # 
+  # observeEvent(input$age,{
+  #   selectRows(proxy,input$table_rows_selected)
+  # })
+  
+  
+  
+  
+  
+  
   
   
 })

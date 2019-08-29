@@ -10,27 +10,81 @@ plot_map_function <- function(vc_pop_df, shp_file){
   
   #Sort so in the same order
   shp_file <- shp_file[order(shp_file$SPID), ]
-  vaccination <- vc_pop_df[order(vc_pop_df$adm1_id), ]
+  vaccination <- if(any(names(vc_pop_df) == "adm1_id")) vc_pop_df[order(vc_pop_df$adm1_id), ] else vc_pop_df[order(vc_pop_df$ISO), ]
+  
+  non_zero_df <- vaccination[which(vaccination$vc != 0), ]
+  no_zero_shp <- shp_file[shp_file$SPID %in% non_zero_df$adm1_id,  ]
+  
   
   #Creating the popup 
-  popup <- paste0("Name: ", vaccination$adm1_name, " - ",
-               "Population immunity: ", paste0(round(vaccination$vc*100, 1), "%"), " - ",
-               "Population: ", formatC(vaccination$pop, format = "d", big.mark = ","))
+  popup <- paste0(
+    "Country: ", no_zero_shp$ISO, 
+    if(any(names(vc_pop_df) == "adm1_id")) non_zero_df$adm1_name else non_zero_df$adm0_name, " - ",
+               "Population immunity: ", paste0(round(non_zero_df$vc*100, 1), "%"), " - ",
+               "Population: ", formatC(non_zero_df$pop, format = "d", big.mark = ","))
+  
   
   #Colour scheme for plotting
   numpal <- colorNumeric("YlGn", 0:100, na.color = "#808080", alpha = FALSE)
   
-  leaflet(shp_file) %>%
-    addProviderTiles("Esri.WorldGrayCanvas", options = tileOptions(maxZoom=9)) %>%
+  leaflet(no_zero_shp, options = leafletOptions(preferCanvas = TRUE)) %>%
+    addProviderTiles("Esri.WorldGrayCanvas", options = providerTileOptions(maxZoom=9, updateWhenIdle = FALSE, updateWhenZooming = FALSE)) %>%
     addPolygons(
       stroke = TRUE, fillOpacity = 1, smoothFactor = 1,
-      fillColor = ~numpal(vaccination$vc*100), col="black",
+      fillColor = ~numpal(non_zero_df$vc*100), col="black",
       weight = 2, label = (popup)) %>%
     addLegend("bottomright", pal = numpal, values = 0:100,
               title = "Coverage (%)",
               opacity = 1, bins = 10, layerId = "map")
   
 }
+
+
+#' Function to output interactive country-level maps to the server
+#' 
+#' @param country_of_interest country name of interest
+#' @param year_of_interest year of interest
+#' @param ages_of_interest ages of interest, vector of 2 the min and max ages
+#' @return leaflet of vaccination coverage map
+#' @export
+#' 
+country_map_gen<-function(shp1, country_of_interest, year_of_interest, ages_of_interest){
+  
+  #Subset to country, year and ages of interes
+  country_shape <- shp1[shp1$NAME_0 == country_of_interest, ]
+  
+  #Generate df of coverage
+  plot_data <- flat_coverage_pop(shp_file = country_shape, 
+                                 year = year_of_interest, 
+                                 min_age = ages_of_interest[1],
+                                 max_age = ages_of_interest[2])
+  
+  #Plot map
+  plot_map_function(plot_data, country_shape)
+  
+}
+
+
+#' Function to output interactive endemic-zone maps to the server
+#' 
+#' @param year_of_interest year of interest
+#' @param ages_of_interest ages of interest, vector of 2 the min and max ages
+#' @return leaflet of vaccination coverage map
+#' @export
+#' 
+endemic_map_gen<-function(shp1, year_of_interest, ages_of_interest){
+  
+  #Generate df of coverage
+  plot_data <- flat_coverage_pop(shp_file = shp1,
+                                 year = year_of_interest,
+                                 min_age = ages_of_interest[1],
+                                 max_age = ages_of_interest[2])
+  
+  #Plot map
+  plot_map_function(plot_data, shp1)
+
+}
+
 
 #' Function to plot interactive aggregated barplots of vaccination coverage
 #' 
@@ -65,14 +119,23 @@ plot_age_vc_barplot <- function(vc_age){
 #' @return line graph of vaccination coverage
 #' @export
 #' 
-plot_age_vc_linegraph <- function(vc_age){
+plot_age_vc_linegraph <- function(vc_age, province){
   
   #Set up the margins for plotting
   m <- list(l = 50, r = 50, b = 50, t = 50, pad = 4)
   
   #Transform data in a way that plotly likes for plotting
-  updated_format<-do.call(rbind, sapply(1:nrow(vc_age), function(x) data.frame(SPID = row.names(vc_age)[x], vc = vc_age[x, ], 
-                                                                               age = 1:length(vc_age[x, ]),
+  if(province == "all"){
+    vc_subset<-vc_age
+  } else if(length(province) == 1){
+    vc_subset<-matrix(vc_age[province, ], nrow = 1)
+    row.names(vc_subset)<-row.names(vc_age)[province]
+  } else {
+    vc_subset<-vc_age[province, ]
+  }
+  
+  updated_format<-do.call(rbind, sapply(1:nrow(vc_subset), function(x) data.frame(SPID = row.names(vc_subset)[x], vc = vc_subset[x, ], 
+                                                                               age = 1:length(vc_subset[x, ]),
                                                                                stringsAsFactors = F), simplify = F))
   #Transform to %
   updated_format$vc<-updated_format$vc*100
