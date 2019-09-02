@@ -14,7 +14,7 @@ library(stringi)
 
 invisible(sapply(list.files("functions", full.names = T), function(x) source(x)))
 
-shp0<-readOGR("data/shp/global_endemic_shp0.shp", stringsAsFactors = F)
+shp0<-readOGR("data/shp/global_endemic_shp0.shp", stringsAsFactors = F, encoding = 'UTF-8')
 shp0<-shp0[order(shp0$ISO), ]
 shp1<-readOGR("data/shp/global_endemic_shp1.shp", stringsAsFactors = F, encoding = 'UTF-8')
 shp1$SPID<-paste0(shp1$ISO, shp1$ID_1)
@@ -23,7 +23,7 @@ shp1<-shp1[!duplicated(shp1$SPID), ]
 load("data/vac_pop_data/vacc_coverage_and_population_adm1.Rdata")
 # load("data/vac_pop_data/pop_vac_data.Rdata")
 
-country_vec<-shp0$NAME_ENGLI
+country_vec<-unique(shp1$NAME_0)
 
 shp1<-shp1[which(shp1$SPID %in% row.names(save_object[[1]])), ]
 

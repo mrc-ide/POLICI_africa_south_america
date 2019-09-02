@@ -1,8 +1,10 @@
 source("load_data.R")
 
 shinyUI(fluidPage(
+  tags$head(HTML('<link rel="icon", href="YF_map.png",
+                 type="image/png" />')),
   headerPanel(list(HTML('<img src="Imperial.png"/>'),"Yellow fever Immunization coverage across Africa and South America"),
-              windowTitle = "Yellow Fever Immunization"),
+              windowTitle = "POLICI: Yellow fever immunization coverage"),
   sidebarPanel(width = 4,
                conditionalPanel(condition = "input.conditionedPanels == '1'", 
                                 selectInput("country",
@@ -80,7 +82,8 @@ shinyUI(fluidPage(
                                  p("If the application appears too zoomed in, hold down the control (command on macs) and - key")),
                         
                         tabPanel("About", value = 5, strong(h2("About")), p("POLICI stands for", strong("PO"),"pulation ", strong("L"),"evel ", strong("I"),"mmunization ", strong("C"), "overage ", strong("I"), "mperial", br(), br(), "This tool was developed in order to visualise yellow fever vaccination coverage across the yellow fever endemic zone in Africa.",
-                                                                            br(), p("We thank the World Health Organization and countries for providing data on vaccination activities, in particular Sergio Yactayo and Olivier Ronveaux")), br(), strong(h2("Contact Information")),
+                                                                            br(), p("We thank the World Health Organization and countries for providing data on vaccination activities, in particular Sergio Yactayo and Olivier Ronveaux"),
+                                                                            br(), p("For age disaggregated vaccination coverage, and further information at a higher spatial resolution (2nd administrative division) please contact Arran Hamlet")), br(), strong(h2("Contact Information")),
                                  p(a("Mr Arran Hamlet", href = "http://www.imperial.ac.uk/people/arran.hamlet14", target = "_blank"), br(), ("arran.hamlet14@imperial.ac.uk")),
                                  p(a("Dr Kevin Jean", href = "http://www.imperial.ac.uk/people/k.jean", target = "_blank"), br(), ("k.jean@imperial.ac.uk")),
                                  p(a("Dr Tini Garske", href = "http://www.imperial.ac.uk/people/t.garske", target = "_blank"), br(), ("t.garske@imperial.ac.uk")),
