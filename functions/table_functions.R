@@ -7,8 +7,8 @@
 
 flat_coverage_pop<-function(shp_file, year, min_age, max_age){
   
-  vac_year<-save_object[[1]][, year-1950, (min_age + 1):(max_age + 1)]
-  pop_year<-save_object[[2]][, year-1950, (min_age + 1):(max_age + 1)]
+  vac_year<-save_object[[1]][, year-1940, (min_age + 1):(max_age + 1)]
+  pop_year<-save_object[[2]][, year-1940, (min_age + 1):(max_age + 1)]
   
   country<-paste(unique(shp_file$ISO), collapse = "|")
   
@@ -36,8 +36,8 @@ flat_coverage_pop<-function(shp_file, year, min_age, max_age){
 
 flat_coverage_pop_endemic<-function(shp_file, year, min_age, max_age){
   
-  vac_year<-save_object[[1]][, year-1950, (min_age + 1):(max_age + 1)]
-  pop_year<-save_object[[2]][, year-1950, (min_age + 1):(max_age + 1)]
+  vac_year<-save_object[[1]][, year-1940, (min_age + 1):(max_age + 1)]
+  pop_year<-save_object[[2]][, year-1940, (min_age + 1):(max_age + 1)]
   
   country<-paste(unique(shp_file$ISO), collapse = "|")
 
@@ -77,8 +77,8 @@ flat_coverage_pop_endemic<-function(shp_file, year, min_age, max_age){
 
 coverage_by_age<-function(country, year){
   
-  vac_year<-save_object[[1]][, year-1950, ]
-  pop_year<-save_object[[2]][, year-1950, ]
+  vac_year<-save_object[[1]][, year-1940, ]
+  pop_year<-save_object[[2]][, year-1940, ]
   
   if(country != "all"){
     vac_year<-vac_year[which(grepl(country, row.names(vac_year))), ]
@@ -107,8 +107,8 @@ coverage_by_age<-function(country, year){
 
 coverage_by_age_aggregated<-function(country, province, year){
   
-  vac_year<-save_object[[1]][which(grepl(country, row.names(save_object[[1]]))), year-1950, ]
-  pop_year<-save_object[[2]][which(grepl(country, row.names(save_object[[2]]))), year-1950, ]
+  vac_year<-save_object[[1]][which(grepl(country, row.names(save_object[[1]]))), year-1940, ]
+  pop_year<-save_object[[2]][which(grepl(country, row.names(save_object[[2]]))), year-1940, ]
 
   if(all(province != "all")){
     vac_year<-matrix(vac_year[province, ], nrow = length(province), byrow = F)

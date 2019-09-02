@@ -12,14 +12,14 @@ shinyServer(function(input, output, session){
   country_map_gen(shp1 = shp1,
                   country_of_interest = input$country,
                   year_of_interest = input$year,
-                  ages_of_interest = input$age)
+                  ages_of_interest = isolate(input$age))
   })
   
   'Create endemic zone'
   output$endemic_map <- renderLeaflet({res = 300
   map_made<-endemic_map_gen(shp1 = shp1,
                             year_of_interest = input$year2,
-                            ages_of_interest = input$age2)
+                            ages_of_interest = isolate(input$age2))
   map_made
   
   })
