@@ -1,8 +1,8 @@
 #' Function to plot interactive maps of vaccination coverage
 #' 
+#' @param vc_pop_df vaccination coverage data frame of caluclated risk for each province in a country
 #' @param shp_file shape file for one country
-#' @param vaccination vaccination coverage data frame of caluclated risk for each province in a country
-#' @param shp_file_outline adm0 for plotting the outlines of the country
+#' @param country_outline adm0 for plotting the outlines of the country
 #' @return leaflet of vaccination coverage map
 #' @export
 
@@ -64,7 +64,7 @@ country_map_gen<-function(shp1, country_of_interest, year_of_interest, ages_of_i
                                  max_age = ages_of_interest[2])
   
   #Plot map
-  plot_map_function(plot_data, country_shape)
+  plot_map_function(plot_data, country_shape, country_outline)
   
 }
 
@@ -85,7 +85,7 @@ endemic_map_gen<-function(shp1, year_of_interest, ages_of_interest){
                                  max_age = ages_of_interest[2])
   
   #Plot map
-  plot_map_function(plot_data, shp1)
+  plot_map_function(plot_data, shp1, country_outline)
 
 }
 
@@ -113,8 +113,6 @@ plot_age_vc_barplot <- function(vc_age){
   p3 %>%  layout(xaxis = x, yaxis = y)
   
 }
-
-
 
 
 #' Function to plot interactive line graphs of vaccination coverage
@@ -151,6 +149,91 @@ plot_age_vc_linegraph <- function(vc_age, province){
   
   
 }
+
+#' Function to output downloadable country-level map
+#' 
+#' @param country_of_interest country name of interest
+#' @param year_of_interest year of interest
+#' @param ages_of_interest ages of interest, vector of 2 the min and max ages
+#' @return leaflet of vaccination coverage map
+#' @export
+#' 
+country_map_gen_download<-function(shp1, country_of_interest, year_of_interest, ages_of_interest){
+  
+  #Subset to country, year and ages of interes
+  country_shape <- shp1[shp1$NAME_0 == country_of_interest, ]
+  
+  #Generate df of coverage
+  plot_data <- flat_coverage_pop(shp_file = country_shape, 
+                                 year = year_of_interest, 
+                                 min_age = ages_of_interest[1],
+                                 max_age = ages_of_interest[2])
+  
+  #Plot map
+  save_name <- paste(country_of_interest, year_of_interest, ages_of_interest[1], ages_of_interest[2], sep = "_")
+  
+  plot_map_function_download(plot_data, country_shape, country_outline, save_name)
+  
+}
+
+#' Function to output downloadable endemiczone map
+#' 
+#' @param year_of_interest year of interest
+#' @param ages_of_interest ages of interest, vector of 2 the min and max ages
+#' @return leaflet of vaccination coverage map
+#' @export
+#' 
+endemic_map_gen_download<-function(shp1, year_of_interest, ages_of_interest){
+  
+  #Subset to country, year and ages of interes
+
+  #Generate df of coverage
+  plot_data <- flat_coverage_pop(shp_file = shp1, 
+                                 year = year_of_interest, 
+                                 min_age = ages_of_interest[1],
+                                 max_age = ages_of_interest[2])
+  
+  #Plot map
+  save_name <- paste("Endemic_zone", year_of_interest, ages_of_interest[1], ages_of_interest[2], sep = "_")
+  
+  plot_map_function_download(plot_data, shp1, shp0, save_name)
+  
+}
+
+
+#' Function to plot downloadable maps of vaccination coverage
+#' 
+#' @param vc_pop_df vaccination coverage data frame of caluclated risk for each province in a country
+#' @param shp_file shape file for one country
+#' @param country_outline adm0 for plotting the outlines of the country
+#' @return leaflet of vaccination coverage map
+#' @export
+
+plot_map_function_download <- function(vc_pop_df, shp_file, country_outline, save_name){
+  
+  #Sort so in the same order
+  shp_file <- shp_file[order(shp_file$SPID), ]
+  vaccination <- if(any(names(vc_pop_df) == "adm1_id")) vc_pop_df[order(vc_pop_df$adm1_id), ] else vc_pop_df[order(vc_pop_df$ISO), ]
+  
+  non_zero_df <- vaccination[which(vaccination$vc != 0), ]
+  no_zero_shp <- shp_file[shp_file$SPID %in% non_zero_df$adm1_id,  ]
+  country_outline <- shp0[shp0$ISO %in% shp_file[shp_file$SPID %in% vaccination$adm1_id,  ]$ISO, ]
+  
+  #Colour scheme for plotting
+  mybreaks <- seq(0, 100, length.out = 101)
+  mycols <- colorRampPalette(brewer.pal(9, "YlGn"))(length(mybreaks) - 1)
+  vcols <- findInterval(non_zero_df$vc*100, mybreaks)
+  
+  plot(no_zero_shp, col = mycols[vcols])
+  plot(country_outline, add = TRUE, lwd = 2)
+  mtext(side = 3, text = save_name, line = -2)
+  image.plot(col.sub = "black", legend.only = T, breaks = mybreaks, col = mycols, 
+             zlim = c(0, 100), cex = 1.5, axis.args  =  list(cex.axis  =  1.5), 
+             legend.width  =  1.5, legend.shrink	 = 0.7)
+  
+}
+
+
 
 
 

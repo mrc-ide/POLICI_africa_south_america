@@ -17,7 +17,9 @@ shinyUI(fluidPage(
                                             sep = "", step = 1),
                                 actionButton("resetSelection1", label = "Reset row selection"),
                                 actionButton("update_range", label = "Update age range"),
-                                DT::dataTableOutput("country_df")),
+                                DT::dataTableOutput("country_df"),
+                                downloadButton("country_map_download", label = "Download map"),
+                                downloadButton("country_df_download", label = "Download table")),
                
                conditionalPanel(condition = "input.conditionedPanels == '2'", 
                                 selectInput("country2",
@@ -29,7 +31,7 @@ shinyUI(fluidPage(
                                             bsPopover("year", "Information", content = "", placement = "right", trigger = "hover", option = NA)),
                                 actionButton("resetSelection2", label = "Reset row selection"),
                                 DT::dataTableOutput("country_df2")),
-
+               
                conditionalPanel(condition = "input.conditionedPanels == '3'",
                                 sliderInput("year3", label = "Year of interest", min = 1940, max = 2050, value = 2019, sep = "", step = 1,
                                             bsPopover("year", "Information", content = "", placement = "right", trigger = "hover", option = NA)),
@@ -37,12 +39,14 @@ shinyUI(fluidPage(
                                             min = 0, max = 100, value = c(0, 100), sep = "", step = 1),
                                 actionButton("update_range2", label = "Update age range"),
                                 actionButton("resetSelection3", label = "Reset row selection"),
-                                DT::dataTableOutput("endemic_df"))),
-
-               br(),br(),
-               
-     mainPanel(width=8,
-               
+                                DT::dataTableOutput("endemic_df"),
+                                downloadButton("endemic_map_download", label = "Download map"),
+                                downloadButton("endemic_df_download", label = "Download table"))),
+  
+  br(),br(),
+  
+  mainPanel(width=8,
+            
             tabsetPanel(id="conditionedPanels",
                         
                         tabPanel("Country maps", value=1, leafletOutput("country_map", height=850, width=1000)),
@@ -53,7 +57,12 @@ shinyUI(fluidPage(
                                  plotlyOutput("linegraph", height = 450, width = 800),
                                  
                                  bsPopover("linegraph", "Information", content=paste0("This graph shows the vaccination coverage in different", " provinces across ages."," Scroll to see all selected provinces","</p><p> Choose from the table to display values."," By default the country average is shown."), placement = "right", trigger = "hover", options = NULL)),
-                        tabPanel("Endemic zone", tabName = "endemic", value = 3, leafletOutput("endemic_map", height = 850, width = 1000)),
+                        
+                        tabPanel("Endemic zone", tabName = "endemic", value = 3, leafletOutput("endemic_map", height = 850, width = 1000),
+                                 tagList(
+                                   tags$head(
+                                     tags$script(type = "text/javascript", src = "busy.js"))),
+                                 div(class = "busy", p('Loading'), img(src = "spinner.gif"))),
                         
                         tabPanel("Methodology", value = 4, id = "conditionedPanels", strong(h2("Summary of methods")),
                                  
