@@ -5,6 +5,13 @@ shinyUI(fluidPage(
               windowTitle = "Yellow Fever Immunization"),
   sidebarPanel(width = 4,
                conditionalPanel(condition = "input.conditionedPanels == '1'", 
+                                selectInput("country",
+                                            label = "Choose a country to display",
+                                            choices = country_vec,
+                                            selected = "Angola", selectize = FALSE),
+                                sliderInput("year", label = "Year of interest",
+                                            min = 1940, max = 2050, value = 2019, sep = "", step = 1,
+                                            bsPopover("year", "Information", content = "", placement = "right", trigger = "hover", option = NA)),
                                 sliderInput("age", label = "Age range of interest",
                                             min = 0, max = 100, value = c(0, 100),
                                             sep = "", step = 1),
@@ -12,6 +19,13 @@ shinyUI(fluidPage(
                                 actionButton("update_range", label = "Update age range")),
                
                conditionalPanel(condition = "input.conditionedPanels == '2'", 
+                                selectInput("country",
+                                            label = "Choose a country to display",
+                                            choices = country_vec,
+                                            selected = "Angola", selectize = FALSE),
+                                sliderInput("year", label = "Year of interest",
+                                            min = 1940, max = 2050, value = 2019, sep = "", step = 1,
+                                            bsPopover("year", "Information", content = "", placement = "right", trigger = "hover", option = NA)),
                                 actionButton("resetSelection2", label = "Reset row selection")),
 
                conditionalPanel(condition = "input.conditionedPanels == '3'",
@@ -20,16 +34,8 @@ shinyUI(fluidPage(
                                 sliderInput("age2", label = "Age range of interest",
                                             min = 0, max = 100, value = c(0, 100), sep = "", step = 1),
                                 actionButton("update_range2", label = "Update age range"),
-                                actionButton("resetSelection3", label = "Reset row selection")),
-               
-               conditionalPanel(condition = "input.conditionedPanels != '3'",
-                                selectInput("country",
-                                            label = "Choose a country to display",
-                                            choices = country_vec,
-                                            selected = "Angola", selectize = FALSE),
-                                sliderInput("year", label = "Year of interest",
-                                            min = 1940, max = 2050, value = 2017, sep = "", step = 1,
-                                            bsPopover("year", "Information", content = "", placement = "right", trigger = "hover", option = NA)))),
+                                actionButton("resetSelection3", label = "Reset row selection"))),
+
 
                br(),br(),
                
