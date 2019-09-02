@@ -6,7 +6,7 @@
 #' @return leaflet of vaccination coverage map
 #' @export
 
-plot_map_function <- function(vc_pop_df, shp_file){
+plot_map_function <- function(vc_pop_df, shp_file, country_outline){
   
   #Sort so in the same order
   shp_file <- shp_file[order(shp_file$SPID), ]
@@ -14,7 +14,7 @@ plot_map_function <- function(vc_pop_df, shp_file){
   
   non_zero_df <- vaccination[which(vaccination$vc != 0), ]
   no_zero_shp <- shp_file[shp_file$SPID %in% non_zero_df$adm1_id,  ]
-  
+  country_outline <- shp0[shp0$ISO %in% shp_file[shp_file$SPID %in% vaccination$adm1_id,  ]$ISO, ]
   
   #Creating the popup 
   popup <- paste0(
@@ -35,7 +35,11 @@ plot_map_function <- function(vc_pop_df, shp_file){
       weight = 2, label = (popup)) %>%
     addLegend("bottomright", pal = numpal, values = 0:100,
               title = "Coverage (%)",
-              opacity = 1, bins = 10, layerId = "map")
+              opacity = 1, bins = 10, layerId = "map") %>% addPolylines(data = country_outline, 
+                                                                        fill = F, weight = 2, 
+                                                                        color = "black", 
+                                                                        group = "country_outline", 
+                                                                        opacity = 1)
   
 }
 
