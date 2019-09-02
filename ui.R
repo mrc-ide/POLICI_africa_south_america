@@ -4,48 +4,51 @@ shinyUI(fluidPage(
   headerPanel(list(HTML('<img src="Imperial.png"/>'),"Yellow fever Immunization coverage across Africa and South America"),
               windowTitle = "Yellow Fever Immunization"),
   sidebarPanel(width = 4,
-               conditionalPanel(condition = "input.conditionedPanels != '3'",
-                                selectInput("country",
-                                            label = "Choose a country to display",
-                                            choices = country_vec,
-                                            selected = "Angola", selectize=FALSE)),
-               conditionalPanel(condition = "input.conditionedPanels !='3'",
-                                sliderInput("year", label = "Year of interest",
-                                            min = 1940, max = 2050, value = 2017, sep = "", step = 1,
-                                            bsPopover("year", "Information", content = "", placement = "right", trigger = "hover", option = NA))),
-               conditionalPanel(condition = "input.conditionedPanels == '1'", sliderInput("age", label = "Age range of interest",
-                                                                                          min = 0, max = 100, value = c(0, 100),
-                                                                                          sep = "", step = 1)),
+               conditionalPanel(condition = "input.conditionedPanels == '1'", 
+                                sliderInput("age", label = "Age range of interest",
+                                            min = 0, max = 100, value = c(0, 100),
+                                            sep = "", step = 1),
+                                actionButton("resetSelection1", label = "Reset row selection"),
+                                actionButton("update_range", label = "Update age range")),
+               
+               conditionalPanel(condition = "input.conditionedPanels == '2'", 
+                                actionButton("resetSelection2", label = "Reset row selection")),
+
                conditionalPanel(condition = "input.conditionedPanels == '3'",
                                 sliderInput("year2", label = "Year of interest", min = 1940, max = 2050, value = 2017, sep = "", step = 1,
                                             bsPopover("year", "Information", content = "", placement = "right", trigger = "hover", option = NA)),
                                 sliderInput("age2", label = "Age range of interest",
-                                            min = 0, max = 100, value = c(0, 100), sep = "", step = 1)),                   
-               actionButton("resetSelection", label = "Reset row selection"),
-               actionButton("update_range", label = "Update age range"),
+                                            min = 0, max = 100, value = c(0, 100), sep = "", step = 1),
+                                actionButton("update_range2", label = "Update age range"),
+                                actionButton("resetSelection3", label = "Reset row selection")),
+               
+               conditionalPanel(condition = "input.conditionedPanels != '3'",
+                                selectInput("country",
+                                            label = "Choose a country to display",
+                                            choices = country_vec,
+                                            selected = "Angola", selectize = FALSE),
+                                sliderInput("year", label = "Year of interest",
+                                            min = 1940, max = 2050, value = 2017, sep = "", step = 1,
+                                            bsPopover("year", "Information", content = "", placement = "right", trigger = "hover", option = NA)))),
+
                br(),br(),
-               conditionalPanel(condition = "input.conditionedPanels == '1'", DT::dataTableOutput("country_df")),
-               conditionalPanel(condition = "input.conditionedPanels == '1'", downloadButton(outputId='downloadtable', label = 'Download table')),
-               conditionalPanel(condition = "input.conditionedPanels == '1'", downloadButton(outputId='downloadMap', label = 'Download map')),
                
-               conditionalPanel(condition = "input.conditionedPanels == '2'", DT::dataTableOutput("country_df2")),
-               conditionalPanel(condition = "input.conditionedPanels == '2'", downloadButton(outputId='downloadtable2', label='Download table')),
-               conditionalPanel(condition = "input.conditionedPanels == '2'", downloadButton(outputId='downloadComb', label = 'Download vaccination proportion plot')),
-               conditionalPanel(condition = "input.conditionedPanels == '2'", downloadButton(outputId='downloadPlot', label = 'Download vaccination coverage plot')),
+     mainPanel(width=8,
                
-               conditionalPanel(condition = "input.conditionedPanels == '3'", DT::dataTableOutput("endemic_df")),
-               conditionalPanel(condition = "input.conditionedPanels == '3'", downloadButton(outputId='downloadendemictable', label = 'Download endemic table')),
-               conditionalPanel(condition = "input.conditionedPanels == '3'", downloadButton(outputId='downloadmapendemic', label = 'Download endemic map'))),
-  
-  mainPanel(width=8,
             tabsetPanel(id="conditionedPanels",
+                        
                         tabPanel("Country maps", value=1, leafletOutput("country_map", height=850, width=1000)),
+                        
                         tabPanel("Age distribution", value = 2, plotlyOutput("barplot", height=400, width=1000),
+                                 
                                  bsPopover("barplot", "Information", content = paste0("This graph shows the total population of each 5 year", " age band by vaccination status.","</p><p> Choose from the table to display values."," By default the whole countries values are shown"), placement = "right", trigger = "hover", options = NULL),
                                  plotlyOutput("linegraph", height = 450, width = 800),
+                                 
                                  bsPopover("linegraph", "Information", content=paste0("This graph shows the vaccination coverage in different", " provinces across ages."," Scroll to see all selected provinces","</p><p> Choose from the table to display values."," By default the country average is shown."), placement = "right", trigger = "hover", options = NULL)),
                         tabPanel("Endemic zone", tabName = "endemic", value = 3, leafletOutput("endemic_map", height = 850, width = 1000)),
+                        
                         tabPanel("Methodology", value = 4, id = "conditionedPanels", strong(h2("Summary of methods")),
+                                 
                                  p("Vaccination coverage was estimated using data from large-scale mass vaccinations in French West Africa during the 1940s to 1960s, outbreak response campaigns since 1970 as reported in the",
                                    a("Weekly Epidemiological Record", href=  "http://www.who.int/wer/en/", target = "_blank"), "(WER) or the", a("WHO disease outbreak news", href = "http://www.who.int/csr/don/en/", target = "_blank"),"(DON),",
                                    a("WHO-UNICEF estimates of routine infant immunization coverage", href = "http://www.who.int/immunization/monitoring_surveillance/routine/coverage/en/index4.html", target = "_blank"),
@@ -56,7 +59,9 @@ shinyUI(fluidPage(
                                    "All vaccination activities are implemented at the end of each year, so that the corresponding changes in vaccination coverage will only be visible the following year. For example recent reactive vaccination campaigns conducted in Angola in 2016 are only reflected in the coverage in 2017."),
                                  br(),p("For further reading and a detailed explanation on the methodology, see", strong(a("Hamlet et al., 2018 Vaccine", href = "https://www.sciencedirect.com/science/article/pii/S0264410X19301598?via%3Dihub" ,target = "_blank"))),
                                  br(),p("Vaccination data last updated - January 2018"),
+                                 
                                  p("If the application appears too zoomed in, hold down the control (command on macs) and - key")),
+                        
                         tabPanel("About", value = 5, strong(h2("About")), p("POLICI stands for", strong("PO"),"pulation ", strong("L"),"evel ", strong("I"),"mmunization ", strong("C"), "overage ", strong("I"), "mperial", br(), br(), "This tool was developed in order to visualise yellow fever vaccination coverage across the yellow fever endemic zone in Africa.",
                                                                             br(), p("We thank the World Health Organization and countries for providing data on vaccination activities, in particular Sergio Yactayo and Olivier Ronveaux")), br(), strong(h2("Contact Information")),
                                  p(a("Mr Arran Hamlet", href = "http://www.imperial.ac.uk/people/arran.hamlet14", target = "_blank"), br(), ("arran.hamlet14@imperial.ac.uk")),

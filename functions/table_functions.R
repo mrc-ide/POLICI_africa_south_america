@@ -12,18 +12,46 @@ flat_coverage_pop<-function(shp_file, year, min_age, max_age){
   
   country<-paste(unique(shp_file$ISO), collapse = "|")
   
-  vac_year<-vac_year[which(grepl(country, row.names(vac_year))), ]
-  pop_year<-pop_year[which(grepl(country, row.names(pop_year))), ]
+  if(min_age == max_age){
+    
+    vac_year<-vac_year[which(grepl(country, names(vac_year)))]
+    pop_year<-pop_year[which(grepl(country, names(pop_year)))]
+    
+    pop_vaccinated<-vac_year*pop_year
+    pop_vaccinated[is.nan(pop_vaccinated)]<-0
+    
+    pop_agg<-pop_year
+    pop_vac_agg<-pop_vaccinated
+    
+    data.frame(ISO = gsub('[0-9]', "", names(pop_vaccinated)),
+               adm1_id = names(pop_vaccinated),
+               adm1_name = shp_file[shp_file$SPID %in% names(pop_vaccinated), ]$NAME_1,
+               pop = pop_year,
+               vc = (pop_vaccinated)/(pop_year),
+               stringsAsFactors = F)
+    
+  } else {
+    
+    vac_year<-vac_year[which(grepl(country, row.names(vac_year))), ]
+    pop_year<-pop_year[which(grepl(country, row.names(pop_year))), ]
+    
+    pop_vaccinated<-vac_year*pop_year
+    pop_vaccinated[is.nan(pop_vaccinated)]<-0
+    
+    pop_agg<-rowSums(pop_year)
+    pop_vac_agg<-rowSums(pop_vaccinated)
+    
+    data.frame(ISO = gsub('[0-9]', "", row.names(pop_vaccinated)),
+               adm1_id = row.names(pop_vaccinated),
+               adm1_name = shp_file[shp_file$SPID %in% row.names(pop_vaccinated), ]$NAME_1,
+               pop = rowSums(pop_year),
+               vc = (rowSums(pop_vaccinated)/rowSums(pop_year)),
+               stringsAsFactors = F)
+    
+  }
   
-  pop_vaccinated<-vac_year*pop_year
-  pop_vaccinated[is.nan(pop_vaccinated)]<-0
   
-  data.frame(ISO = gsub('[0-9]', "", row.names(pop_vaccinated)),
-             adm1_id = row.names(pop_vaccinated),
-             adm1_name = shp_file[shp_file$SPID %in% row.names(pop_vaccinated), ]$NAME_1,
-             pop = rowSums(pop_year),
-             vc = (rowSums(pop_vaccinated)/rowSums(pop_year)),
-             stringsAsFactors = F)
+  
   
 }
 
@@ -40,16 +68,32 @@ flat_coverage_pop_endemic<-function(shp_file, year, min_age, max_age){
   pop_year<-save_object[[2]][, year-1940, (min_age + 1):(max_age + 1)]
   
   country<-paste(unique(shp_file$ISO), collapse = "|")
-
-  vac_year<-vac_year[which(grepl(country, row.names(vac_year))), ]
-  pop_year<-pop_year[which(grepl(country, row.names(pop_year))), ]
   
-  pop_vaccinated<-vac_year*pop_year
-  pop_vaccinated[is.nan(pop_vaccinated)]<-0
-  
-  pop_agg<-rowSums(pop_year)
-  pop_vac_agg<-rowSums(pop_vaccinated)
+  if(min_age == max_age){
     
+    vac_year<-vac_year[which(grepl(country, names(vac_year)))]
+    pop_year<-pop_year[which(grepl(country, names(pop_year)))]
+    
+    pop_vaccinated<-vac_year*pop_year
+    pop_vaccinated[is.nan(pop_vaccinated)]<-0
+    
+    pop_agg<-pop_year
+    pop_vac_agg<-pop_vaccinated
+    
+  } else {
+    
+    vac_year<-vac_year[which(grepl(country, row.names(vac_year))), ]
+    pop_year<-pop_year[which(grepl(country, row.names(pop_year))), ]
+    
+    pop_vaccinated<-vac_year*pop_year
+    pop_vaccinated[is.nan(pop_vaccinated)]<-0
+    
+    pop_agg<-rowSums(pop_year)
+    pop_vac_agg<-rowSums(pop_vaccinated)
+    
+    
+  }
+  
   names(pop_agg)<-gsub("[0-9]+", "", names(pop_agg))
   names(pop_vac_agg)<-gsub("[0-9]+", "", names(pop_vac_agg))
   
@@ -62,8 +106,6 @@ flat_coverage_pop_endemic<-function(shp_file, year, min_age, max_age){
              pop = pop_agg_df[, 2],
              vc = vac_agg_df[, 2]/pop_agg_df[, 2],
              stringsAsFactors = F)
-
-  
   
 }
 
@@ -109,7 +151,7 @@ coverage_by_age_aggregated<-function(country, province, year){
   
   vac_year<-save_object[[1]][which(grepl(country, row.names(save_object[[1]]))), year-1940, ]
   pop_year<-save_object[[2]][which(grepl(country, row.names(save_object[[2]]))), year-1940, ]
-
+  
   if(all(province != "all")){
     vac_year<-matrix(vac_year[province, ], nrow = length(province), byrow = F)
     pop_year<-matrix(pop_year[province, ], nrow = length(province), byrow = F)
@@ -122,7 +164,7 @@ coverage_by_age_aggregated<-function(country, province, year){
   
   popvacmat<-matrix(c(pop_vaccinated, rep(0, 4)), ncol = 5, byrow = T)
   popyearmat<-matrix(c(pop_year, rep(0, 4)), ncol = 5, byrow = T)
-
+  
   data.frame(pop_vac_agg = rowSums(popvacmat), pop_agg = rowSums(popyearmat), stringsAsFactors = F)
   
 }
@@ -156,7 +198,7 @@ country_df_gen<-function(shp1, country_of_interest, year_of_interest, ages_of_in
   DT::datatable(rownames = FALSE, show_df, options=list(pageLength = 14, searching = FALSE, processing = FALSE, mark = ",",
                                                         columnDefs = list(list(className = 'dt-center', targets = 2:3))), 
                 colnames = c("ID", "Province", "Coverage (%)", "Population"), 
-                selection = list(target='row')) %>% DT::formatRound(columns = "pop", mark = ",")
+                selection = list(target='row')) %>% DT::formatRound(columns = "pop", mark = ",", digits = 0)
 }
 
 
@@ -169,7 +211,7 @@ country_df_gen<-function(shp1, country_of_interest, year_of_interest, ages_of_in
 #' @export
 #' 
 endemic_df_gen<-function(shp1, year_of_interest, ages_of_interest){
-
+  
   #Generate df of coverage
   plot_data <- flat_coverage_pop_endemic(shp_file = shp1,
                                          year = year_of_interest,
@@ -186,5 +228,5 @@ endemic_df_gen<-function(shp1, year_of_interest, ages_of_interest){
   DT::datatable(rownames = FALSE, show_df, options=list(pageLength = 14, searching = FALSE, processing = FALSE, mark = ",",
                                                         columnDefs = list(list(className = 'dt-center', targets = 2:3))), 
                 colnames = c("ISO", "Country", "Coverage (%)", "Population"), 
-                selection = list(target='row')) %>% DT::formatRound(columns = "pop", mark = ",")
+                selection = list(target='row')) %>% DT::formatRound(columns = "pop", mark = ",", digits = 0)
 }

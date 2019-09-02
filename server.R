@@ -71,7 +71,7 @@ shinyServer(function(input, output, session){
     country_df_gen(shp1 = shp1,
                    country_of_interest = input$country,
                    year_of_interest = input$year,
-                   ages_of_interest = input$age)
+                   ages_of_interest = isolate(input$age))
   })
   
   'Create data.table for country level age exploration'
@@ -79,14 +79,14 @@ shinyServer(function(input, output, session){
     country_df_gen(shp1 = shp1,
                    country_of_interest = input$country,
                    year_of_interest = input$year,
-                   ages_of_interest = input$age)
+                   ages_of_interest = isolate(input$age))
   })
   
   'Create data.table for endemic zone level'
   output$endemic_df <- DT::renderDataTable({
     endemic_df_gen(shp1 = shp1,
                    year_of_interest = input$year2,
-                   ages_of_interest = input$age2)
+                   ages_of_interest = isolate(input$age2))
     
   })
   
@@ -114,11 +114,11 @@ shinyServer(function(input, output, session){
     }
   })
   
-  observeEvent(input$resetSelection, {
+  observeEvent(input$resetSelection1, {
     leafletProxy("country_map") %>% clearGroup("country_outline")
   })
   
-  observeEvent(input$resetSelection, {
+  observeEvent(input$resetSelection3, {
     leafletProxy("endemic_map") %>% clearGroup("endemic_outline")
   })
   
@@ -156,21 +156,41 @@ shinyServer(function(input, output, session){
     
   })
   
+  #Observe clicking the update age range button
+  #Plot map
+  observeEvent(input$update_range, {
+    output$country_map <- renderLeaflet({res = 300
+    country_map_gen(shp1 = shp1,
+                    country_of_interest = input$country,
+                    year_of_interest = input$year,
+                    ages_of_interest = isolate(input$age))
+    })
+  })
+
+  observeEvent(input$update_range2, {
+    output$country_map <- renderLeaflet({res = 300
+    map_made<-endemic_map_gen(shp1 = shp1,
+                              year_of_interest = input$year2,
+                              ages_of_interest = isolate(input$age2))
+    map_made
+    })
+  })
   
+
   '~~~~~~~~~~~~~~~~~~~~~~~ Datatable proxy ~~~~~~~~~~~~~~~~~~~~~~~'
   country_df_proxy <- dataTableProxy('country_df')
   country_df2_proxy <- dataTableProxy('country_df2')
   endemic_df_proxy <- dataTableProxy('endemic_df')
   
-  observeEvent(input$resetSelection,{
+  observeEvent(input$resetSelection1,{
     selectRows(country_df_proxy, NULL)
   })
   
-  observeEvent(input$resetSelection,{
+  observeEvent(input$resetSelection2,{
     selectRows(country_df2_proxy, NULL)
   })
   
-  observeEvent(input$resetSelection,{
+  observeEvent(input$resetSelection3,{
     selectRows(endemic_df_proxy, NULL)
   })
   
