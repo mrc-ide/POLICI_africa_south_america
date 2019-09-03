@@ -22,7 +22,7 @@ shinyServer(function(input, output, session){
   on.exit(progress$close())
   progress$set(message = "Plotting",detail = "Max plotting time 
                ~5 seconds", value = 1000)
-
+  
   map_made<-endemic_map_gen(shp1 = shp1,
                             year_of_interest = input$year3,
                             ages_of_interest = isolate(input$age2))
@@ -198,6 +198,24 @@ shinyServer(function(input, output, session){
   })
   
   
+  observeEvent(input$update_range2,{
+    output$endemic_df <- DT::renderDataTable({
+      endemic_df_gen(shp1 = shp1,
+                     year_of_interest = input$year3,
+                     ages_of_interest = isolate(input$age2))
+      
+    })
+  })
+  
+  observeEvent(input$update_range,{
+    output$country_df <- DT::renderDataTable({
+      country_df_gen(shp1 = shp1,
+                     country_of_interest = input$country,
+                     year_of_interest = input$year1,
+                     ages_of_interest = isolate(input$age))
+    })
+  })
+  
   
   observeEvent(input$year1,{
     selectRows(country_df_proxy, input$country_df_rows_selected)
@@ -210,6 +228,7 @@ shinyServer(function(input, output, session){
   observeEvent(input$year,{
     selectRows(endemic_df_proxy, input$endemic_df_rows_selected)
   })
+  
 
   '~~~~~~~~~~~~~ Save maps and dataframes ~~~~~~~~~~~~~'
   output$country_map_download <- downloadHandler(
@@ -286,7 +305,7 @@ shinyServer(function(input, output, session){
   
   addPopover(session, "age2", "", content = paste0("Select age range and click update range."), 
              placement = "right", trigger = "hover")
-
+  
   #Reset select rane
   addPopover(session, "resetSelection1", "", content = paste0("Reset the rows selected on the dataframe."), 
              placement = "right", trigger = "hover")
@@ -300,10 +319,10 @@ shinyServer(function(input, output, session){
   #Reset select rane
   addPopover(session, "update_range", "", content = paste0("Update the age range plotted."), 
              placement = "right", trigger = "hover")
-
+  
   addPopover(session, "update_range2", "", content = paste0("Update the age range plotted."), 
              placement = "right", trigger = "hover")
-
+  
   #Country table
   addPopover(session, "country_df", "", content = paste0("Select provinces to display", " on the map and in graphs."), 
              placement = "bottom", trigger = "hover", options = list(container = 'body', width = 500))
@@ -331,7 +350,7 @@ shinyServer(function(input, output, session){
              placement = "right", trigger = "hover", options = NULL)
   
   addPopover(session, "endemic_map", "", content = paste0("This map shows vaccination coverage", " at the first administrative level across the endemic zone.", 
-                                                       "</p><p> Due to the size it may take around 5 seconds to load."), 
+                                                          "</p><p> Due to the size it may take around 5 seconds to load."), 
              placement = "right", trigger = "hover", options = NULL)
   
   #Download maps
