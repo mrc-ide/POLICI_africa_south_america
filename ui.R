@@ -51,9 +51,9 @@ shinyUI(fluidPage(
             
             tabsetPanel(id="conditionedPanels",
                         
-                        tabPanel("Country maps", value=1, leafletOutput("country_map", height=850, width=1000)),
-                        
-                        tabPanel("Age distribution", value = 2, plotlyOutput("barplot", height=400, width=1000),
+                        tabPanel("Country maps", value=1, leafletOutput("country_map", height = 850, width = 1000)),
+                         
+                        tabPanel("Age distribution", value = 2, plotlyOutput("barplot", height = 400, width = 1000),
                                  
                                  bsPopover("barplot", "Information", content = paste0("This graph shows the total population of each 5 year", " age band by vaccination status.","</p><p> Choose from the table to display values."," By default the whole countries values are shown"), placement = "right", trigger = "hover", options = NULL),
                                  plotlyOutput("linegraph", height = 450, width = 800),
