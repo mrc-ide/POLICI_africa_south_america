@@ -102,7 +102,7 @@ shinyServer(function(input, output, session){
   '~~~~~~~~~~~~~~~~~~~~~~~ Proxy objects and observing events ~~~~~~~~~~~~~~~~~~~~~~~'
   '~~~~~~~~~~~~~~~~~~~~~~~ Map proxy ~~~~~~~~~~~~~~~~~~~~~~~'
   observeEvent(input$country_df_rows_selected, {
-    if(input$country_df_rows_selected %in% 1:2){
+    if(any(input$country_df_rows_selected %in% 1:2)){
       leafletProxy("country_map")
     } else {
       country_shp <- shp1[shp1$NAME_0 == input$country, ]
@@ -113,7 +113,7 @@ shinyServer(function(input, output, session){
   })
   
   observeEvent(input$endemic_df_rows_selected, {
-    if(input$endemic_df_rows_selected %in% 1:2){
+    if(any(input$endemic_df_rows_selected %in% 1:2)){
       leafletProxy("endemic_map")
     } else {
       polygon_add <- gUnaryUnion(shp0[input$endemic_df_rows_selected -2, ])
