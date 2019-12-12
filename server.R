@@ -64,7 +64,7 @@ shinyServer(function(input, output, session){
   plot_data <- coverage_by_age(country = unique(shp1[shp1$NAME_0 == country_of_interest, ]$ISO),
                                year = year_of_interest)
   #Plot map
-  province <- if(is.null(input$country_df2_rows_selected) || any(input$country_df2_rows_selected == 1)) "all" else input$country_df2_rows_selected - 1
+  province <- if(is.null(input$country_df2_rows_selected) || any(input$country_df2_rows_selected == 1)) "all" else if(input$country_df2_rows_selected == 2) 1 else input$country_df2_rows_selected - 1
   
   plot_age_vc_linegraph(plot_data, province)
   
@@ -113,10 +113,10 @@ shinyServer(function(input, output, session){
   })
   
   observeEvent(input$endemic_df_rows_selected, {
-    if(any(input$endemic_df_rows_selected %in% 1:2)){
+    if(any(input$endemic_df_rows_selected < 4)){
       leafletProxy("endemic_map")
     } else {
-      polygon_add <- gUnaryUnion(shp0[input$endemic_df_rows_selected -2, ])
+      polygon_add <- gUnaryUnion(shp0[input$endemic_df_rows_selected - 4, ])
       leafletProxy("endemic_map") %>% clearGroup("endemic_outline") %>% 
         addPolylines(data = polygon_add, fill = F, weight = 5, color = "#FF6347", group = "endemic_outline", opacity = 1)
     }
@@ -157,13 +157,14 @@ shinyServer(function(input, output, session){
   })
   
   observeEvent(input$update_range2, {
-    output$country_map <- renderLeaflet({res = 300
+    output$endemic_map <- renderLeaflet({res = 300
     map_made<-endemic_map_gen(shp1 = shp1,
                               year_of_interest = input$year3,
                               ages_of_interest = isolate(input$age2))
     map_made
     })
   })
+
   
   '~~~~~~~~~~~~~ Update inputs based on other inputs ~~~~~~~~~~~~~'
   observeEvent(input$country, {
@@ -173,12 +174,12 @@ shinyServer(function(input, output, session){
     updateSelectInput(session, "country", selected = input$country2)
   })
   
-  observeEvent(input$year1, {
-    updateSelectInput(session, "year2", selected = input$year1)
-  })
-  observeEvent(input$year2, {
-    updateSelectInput(session, "year1", selected = input$year2)
-  })
+  # observeEvent(input$year1, {
+  #   updateSelectInput(session, "year2", selected = input$year1)
+  # })
+  # observeEvent(input$year2, {
+  #   updateSelectInput(session, "year1", selected = input$year2)
+  # })
   
   '~~~~~~~~~~~~~~~~~~~~~~~ Datatable proxy ~~~~~~~~~~~~~~~~~~~~~~~'
   country_df_proxy <- dataTableProxy('country_df')

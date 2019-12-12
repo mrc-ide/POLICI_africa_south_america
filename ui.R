@@ -77,7 +77,7 @@ shinyUI(fluidPage(
                                    "Population movements or displacements are not taken into account. In addition to these caveats, accuracy of the vaccination coverage estimates relies on completeness of the records of vaccination activities, as well as accurate estimates of demography, which is uncertain in many African countries.",
                                    "All vaccination activities are implemented at the end of each year, so that the corresponding changes in vaccination coverage will only be visible the following year. For example recent reactive vaccination campaigns conducted in Angola in 2016 are only reflected in the coverage in 2017."),
                                  br(),p("For further reading and a detailed explanation on the methodology, see", strong(a("Hamlet et al., 2018 Vaccine", href = "https://www.sciencedirect.com/science/article/pii/S0264410X19301598?via%3Dihub" ,target = "_blank"))),
-                                 br(),p("Vaccination data last updated - January 2018"),
+                                 br(),p("Vaccination data last updated - November 2019"),
                                  
                                  p("If the application appears too zoomed in, hold down the control (command on macs) and - key")),
                         

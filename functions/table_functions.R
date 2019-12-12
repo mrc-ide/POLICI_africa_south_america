@@ -220,8 +220,15 @@ endemic_df_gen<-function(shp1, year_of_interest, ages_of_interest){
   
   #Create extra row of dataframe and format
   all<-data.frame(ISO = "All", adm0_name = "", pop = sum(plot_data$pop), vc = "", stringsAsFactors = F)
+  africa <- data.frame(ISO = "Africa", adm0_name = "", pop = sum(plot_data[plot_data$ISO %in% africa_iso, ]$pop),
+                       vc = sum(plot_data[plot_data$ISO %in% africa_iso, ]$pop * plot_data[plot_data$ISO %in% africa_iso, ]$vc) / sum(plot_data[plot_data$ISO %in% africa_iso, ]$pop),
+                       stringsAsFactors = F)
+  
+  south_america <- data.frame(ISO = "South America", adm0_name = "", pop = sum(plot_data[plot_data$ISO %in% south_america_iso, ]$pop),
+                             vc = sum(plot_data[plot_data$ISO %in% south_america_iso, ]$pop * plot_data[plot_data$ISO %in% south_america_iso, ]$vc) / sum(plot_data[plot_data$ISO %in% south_america_iso, ]$pop),
+                             stringsAsFactors = F)
   average <- data.frame(ISO = "Average", adm0_name = "", pop = mean(plot_data$pop), vc = sum(plot_data$pop*plot_data$vc)/sum(plot_data$pop), stringsAsFactors = F)
-  show_df <- rbind(all, average, plot_data)
+  show_df <- rbind(all, average, africa, south_america, plot_data)
   show_df$vc <- round(as.numeric(show_df$vc)*100, 1)
   show_df<-show_df[, c("ISO", "adm0_name", "vc", "pop")]
   
