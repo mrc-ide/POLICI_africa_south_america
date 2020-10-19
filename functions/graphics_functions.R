@@ -105,7 +105,7 @@ plot_age_vc_barplot <- function(vc_age){
   xlab <- base::factor(xlab, levels = xlab)
   
   p <- plot_ly(x = xlab, y = round(vc_age[, 1]), name = "Vaccinated", type = "bar", marker = list(color = toRGB("dodgerblue"))) 
-  p2 <- add_trace(p, x = xlab, y = round(vc_age[, 2]), type = "bar", name = "Unvaccinated", marker = list(color = toRGB("tomato1")))
+  p2 <- add_trace(p, x = xlab, y = round(vc_age[, 2] - vc_age[, 1]), type = "bar", name = "Unvaccinated", marker = list(color = toRGB("tomato1")))
   p3 <- layout(p2, barmode = "stack")
   x <- list(title = "Age group")
   y <- list(title = "Population")
